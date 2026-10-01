@@ -64,10 +64,15 @@ function Inner() {
         {session ? <Link href="/app" className="text-[15px] font-medium text-lagoon">Mes tickets</Link> : null}
       </header>
       <div className="mx-auto max-w-md px-4">
-        <p className="no-print text-center text-ink-soft">Votre ticket chez</p>
-        <h1 className="no-print text-center text-[26px] font-bold tracking-tight">{r.merchant?.name ?? r.merchant_name}</h1>
+        <p className="no-print flex items-center justify-center gap-2 text-lagoon font-semibold">
+          <span className="grid place-items-center h-6 w-6 rounded-full bg-lagoon text-white" aria-hidden>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          </span>
+          Ticket reçu
+        </p>
+        <h1 className="no-print mt-2 text-center display-md text-[34px]">{r.merchant?.name ?? r.merchant_name}</h1>
         <div className="mt-6 print-area">
-          <ReceiptView r={r} />
+          <ReceiptView r={r} className="printing" />
         </div>
 
         <div className="no-print mt-8 space-y-3">

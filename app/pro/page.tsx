@@ -7,6 +7,7 @@ import { Logo } from "@/components/Logo";
 import { Spinner } from "@/components/Spinner";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/lib/useSession";
+import { ProWelcome, OrderTile } from "@/components/ProWelcome";
 import { CATEGORIES, money, dateTime, siteUrl, type Item, type Receipt } from "@/lib/format";
 
 type Merchant = {
@@ -30,12 +31,15 @@ export default function ProPage() {
   const [merchant, setMerchant] = useState<Merchant | null | undefined>(undefined);
   const [terminals, setTerminals] = useState<Terminal[]>([]);
   const [tab, setTab] = useState<Tab>("caisse");
+  const [fresh, setFresh] = useState(false);
 
   const load = useCallback(async () => {
     const sb = supabase();
     const { data: m } = await sb.from("merchants").select("*").maybeSingle();
     setMerchant((m as Merchant) ?? null);
     if (m) {
+      const { data: st } = await sb.rpc("merchant_stats");
+      setFresh(((st as { total?: number } | null)?.total ?? 0) <= 1 || new URLSearchParams(window.location.search).has("bienvenue"));
       const { data: t } = await sb.from("terminals").select("*").eq("merchant_id", m.id).order("created_at");
       setTerminals((t as Terminal[]) ?? []);
     }
@@ -43,7 +47,7 @@ export default function ProPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!session) { router.replace("/connexion?role=pro&next=/pro"); return; }
+    if (!session) { router.replace("/connexion?mode=login&next=/pro"); return; }
     load();
     const h = window.location.hash.slice(1) as Tab;
     if (TABS.some((t) => t.id === h)) setTab(h);
@@ -62,10 +66,17 @@ export default function ProPage() {
       </header>
 
       {merchant === null ? (
-        <Onboarding onDone={load} />
+        <Onboarding />
       ) : (
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <h1 className="text-[28px] font-bold tracking-tight">{merchant.name}</h1>
+          <h1 className="display-md text-[36px] sm:text-[44px]">{merchant.name}</h1>
+          {fresh && terminals[0] && (
+            <div className="mt-6 space-y-4">
+              <ProWelcome merchant={merchant} terminal={terminals[0]} onGoSettings={() => setTab("reglages")} />
+              <OrderTile merchantId={merchant.id} />
+              <button className="text-[14px] text-mute underline underline-offset-4" onClick={() => setFresh(false)}>Masquer le démarrage</button>
+            </div>
+          )}
           <nav className="mt-4 flex gap-1 overflow-x-auto -mx-4 px-4 border-b border-sand-deep" aria-label="Sections">
             {TABS.map((t) => (
               <button key={t.id} onClick={() => { setTab(t.id); history.replaceState(null, "", `#${t.id}`); }}
@@ -88,55 +99,11 @@ export default function ProPage() {
   );
 }
 
-/* ---------- Onboarding ---------- */
-function Onboarding({ onDone }: { onDone: () => void }) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("Alimentation");
-  const [address, setAddress] = useState("");
-  const [siret, setSiret] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true); setError(null);
-    const sb = supabase();
-    const { data: m, error } = await sb.from("merchants")
-      .insert({ name: name.trim(), category, address: address.trim() || null, siret: siret.trim() || null })
-      .select("id").single();
-    if (error) { setError(error.message); setBusy(false); return; }
-    await sb.from("terminals").insert({ merchant_id: m.id, label: "Caisse 1" });
-    onDone();
-  }
-
-  return (
-    <div className="mx-auto max-w-lg px-4 pt-6">
-      <h1 className="text-[30px] font-bold tracking-tight leading-tight">Présentez votre commerce</h1>
-      <p className="mt-2 text-ink-soft">Ces informations apparaissent en tête de chaque ticket.</p>
-      <form onSubmit={submit} className="mt-8 space-y-4">
-        <div>
-          <label className="label" htmlFor="n">Nom du commerce</label>
-          <input id="n" required className="field" placeholder="Ex. Ti Kaz Bokit" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div>
-          <label className="label" htmlFor="c">Activité</label>
-          <select id="c" className="field" value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="label" htmlFor="a">Adresse</label>
-          <textarea id="a" rows={2} className="field" placeholder={"Rue Frébault\n97110 Pointe-à-Pitre"} value={address} onChange={(e) => setAddress(e.target.value)} />
-        </div>
-        <div>
-          <label className="label" htmlFor="s">SIRET (facultatif)</label>
-          <input id="s" inputMode="numeric" className="field" value={siret} onChange={(e) => setSiret(e.target.value)} />
-        </div>
-        {error && <p role="alert" className="text-alert">{error}</p>}
-        <button className="btn btn-primary w-full" disabled={busy}>{busy ? "Création…" : "Créer mon commerce et ma première borne"}</button>
-      </form>
-    </div>
-  );
+/* ---------- Onboarding: handled by the guided /commencer flow ---------- */
+function Onboarding() {
+  const router = useRouter();
+  useEffect(() => { router.replace("/commencer"); }, [router]);
+  return <Spinner />;
 }
 
 /* ---------- Encaisser ---------- */
@@ -315,6 +282,7 @@ function Bornes({ merchant, terminals, reload }: { merchant: Merchant; terminals
 
   return (
     <div className="space-y-6">
+      <OrderTile merchantId={merchant.id} />
       <div className="grid gap-4 md:grid-cols-2">
         {terminals.map((t) => {
           const url = `${siteUrl()}/t/${t.code}`;

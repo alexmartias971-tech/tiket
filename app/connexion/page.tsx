@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/lib/supabase";
@@ -21,6 +21,7 @@ function Inner() {
   const role = params.get("role");
   const next = params.get("next") || (role === "pro" ? "/pro" : "/app");
   const [mode, setMode] = useState<"login" | "signup">(params.get("mode") === "login" ? "login" : "signup");
+  useEffect(() => { if (role === "pro" && mode === "signup") router.replace("/commencer"); }, [role, mode, router]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);

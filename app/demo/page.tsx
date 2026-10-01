@@ -28,7 +28,7 @@ export default function Demo() {
           <div className="btn btn-ghost w-full opacity-60" aria-disabled>Enregistrer dans mes tickets</div>
           <div className="btn btn-mango w-full opacity-60" aria-disabled>Laisser un avis à Ti Kaz Bokit</div>
           <p className="text-center text-[14px] text-mute pt-2">Ticket d’exemple : commerce fictif.</p>
-          <Link href="/connexion?role=pro" className="btn btn-primary w-full">Équiper mon commerce</Link>
+          <Link href="/commencer" className="btn btn-primary w-full">Équiper mon commerce</Link>
         </div>
       </div>
     </main>

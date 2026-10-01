@@ -233,3 +233,23 @@ begin
   values (gen_random_uuid(), uid, uid::text, jsonb_build_object('sub', uid::text, 'email', e, 'email_verified', true), 'email', now(), now(), now());
   return json_build_object('id', uid);
 end; $$;
+
+-- ───────── Commandes de bornes (depuis l'espace commerçant)
+create table public.orders (
+  id uuid primary key default gen_random_uuid(),
+  merchant_id uuid not null references public.merchants(id) on delete cascade,
+  quantity int not null default 1 check (quantity between 1 and 20),
+  contact_name text not null,
+  phone text not null,
+  delivery_address text not null,
+  pos_software text,
+  note text,
+  status text not null default 'nouvelle' check (status in ('nouvelle','confirmee','livree','annulee')),
+  created_at timestamptz not null default now()
+);
+create index on public.orders (merchant_id, created_at desc);
+alter table public.orders enable row level security;
+create policy orders_owner_select on public.orders for select to authenticated
+  using (exists (select 1 from public.merchants m where m.id = orders.merchant_id and m.owner_id = (select auth.uid())));
+create policy orders_owner_insert on public.orders for insert to authenticated
+  with check (status = 'nouvelle' and exists (select 1 from public.merchants m where m.id = orders.merchant_id and m.owner_id = (select auth.uid())));

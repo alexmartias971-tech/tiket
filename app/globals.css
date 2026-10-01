@@ -1,17 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #1c2422;
+  --color-night: #05302e;
+  --color-night-2: #0a3f3c;
+  --color-ink: #10201f;
   --color-ink-soft: #4b5754;
   --color-mute: #7c8784;
-  --color-sand: #eef1ec;
-  --color-sand-deep: #dfe5dd;
+  --color-sand: #eef3f1;
+  --color-sand-deep: #dbe4e1;
   --color-paper: #ffffff;
-  --color-lagoon: #0f5c5a;
-  --color-lagoon-deep: #0a4240;
-  --color-lagoon-soft: #d6e8e4;
-  --color-mango: #f4a51c;
-  --color-mango-soft: #fdf0d3;
+  --color-lagoon: #0e6b67;
+  --color-lagoon-deep: #08504d;
+  --color-lagoon-soft: #d3ece8;
+  --color-foam: #7fe0d2;
+  --color-mango: #ffc93c;
+  --color-mango-soft: #fff3cf;
   --color-alert: #b8321f;
   --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
@@ -92,6 +95,34 @@ body {
 .btn-ghost { background: transparent; color: var(--color-ink); border: 1.5px solid var(--color-sand-deep); }
 .btn-ghost:hover { background: var(--color-paper); }
 .btn-mango { background: var(--color-mango); color: var(--color-ink); }
+.btn-mango:hover { background: #ffd666; }
+.btn-onnight { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.28); }
+.btn-onnight:hover { background: rgba(255,255,255,.08); }
+.btn-lg { height: 56px; padding: 0 26px; font-size: 17px; border-radius: 16px; }
+
+/* Condensed display type: the page's voice */
+.display { font-variation-settings: "wdth" 75, "opsz" 96; font-weight: 800; letter-spacing: -0.02em; line-height: .92; }
+.display-md { font-variation-settings: "wdth" 80, "opsz" 72; font-weight: 750; letter-spacing: -0.015em; line-height: 1; }
+
+/* FAQ */
+details.faq > summary { list-style: none; cursor: pointer; }
+details.faq > summary::-webkit-details-marker { display: none; }
+details.faq .chev { transition: transform .2s; }
+details.faq[open] .chev { transform: rotate(45deg); }
+
+/* Hero demo */
+.phone { transition: transform .9s cubic-bezier(.65,.05,.25,1); will-change: transform; }
+.phone.tapped { transform: translate(var(--tap-x), var(--tap-y)) rotate(-8deg); }
+.phone.after { transition-duration: .7s; }
+@keyframes buzz { 0%,100%{translate:0 0} 25%{translate:-2px 0} 75%{translate:2px 0} }
+.buzz { animation: buzz .09s linear 4; }
+@keyframes slide-receipt { from { transform: translateY(105%); } to { transform: translateY(0); } }
+.receipt-in { animation: slide-receipt .9s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes ring { 0% { transform: scale(.6); opacity: .9 } 100% { transform: scale(2.2); opacity: 0 } }
+.tap-ring { animation: ring 1.1s ease-out 2; }
+@media (prefers-reduced-motion: reduce) {
+  .phone, .receipt-in, .tap-ring, .buzz { transition: none !important; animation: none !important; }
+}
 
 .field {
   width: 100%; height: 48px; padding: 0 14px; border-radius: 12px;
