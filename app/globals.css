@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #1c2422;
+  --color-ink-soft: #4b5754;
+  --color-mute: #7c8784;
+  --color-sand: #eef1ec;
+  --color-sand-deep: #dfe5dd;
+  --color-paper: #ffffff;
+  --color-lagoon: #0f5c5a;
+  --color-lagoon-deep: #0a4240;
+  --color-lagoon-soft: #d6e8e4;
+  --color-mango: #f4a51c;
+  --color-mango-soft: #fdf0d3;
+  --color-alert: #b8321f;
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--color-sand);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-lagoon);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Thermal receipt strip with torn edges */
+.receipt {
+  position: relative;
+  background: var(--color-paper);
+  font-family: var(--font-mono);
+  color: var(--color-ink);
+  filter: drop-shadow(0 1px 0 rgba(28, 36, 34, 0.08)) drop-shadow(0 12px 24px rgba(15, 92, 90, 0.10));
+  --tooth: 10px;
+  -webkit-mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--tooth) 51% repeat-x,
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / var(--tooth) 51% repeat-x;
+  mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / var(--tooth) 51% repeat-x,
+    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / var(--tooth) 51% repeat-x;
+  padding: 28px 22px;
+}
+.receipt hr {
+  border: 0;
+  border-top: 1.5px dashed #c9d0cd;
+  margin: 14px 0;
+}
+
+/* One orchestrated moment: the hero receipt prints out */
+@keyframes print-out {
+  from { clip-path: inset(0 0 100% 0); transform: translateY(-14px); }
+  to   { clip-path: inset(0 0 0 0); transform: translateY(0); }
+}
+.printing { animation: print-out 1.8s steps(18, end) 0.3s both; }
+@media (prefers-reduced-motion: reduce) {
+  .printing { animation: none; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.nfc-pulse::before, .nfc-pulse::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--color-lagoon);
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+.nfc-pulse::after { animation-delay: 0.9s; }
+@media (prefers-reduced-motion: reduce) {
+  .nfc-pulse::before, .nfc-pulse::after { animation: none; opacity: 0.3; }
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 48px; padding: 0 20px; border-radius: 14px;
+  font-weight: 600; font-size: 16px;
+  transition: background-color .15s, transform .1s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: .5; pointer-events: none; }
+.btn-primary { background: var(--color-lagoon); color: #fff; }
+.btn-primary:hover { background: var(--color-lagoon-deep); }
+.btn-ghost { background: transparent; color: var(--color-ink); border: 1.5px solid var(--color-sand-deep); }
+.btn-ghost:hover { background: var(--color-paper); }
+.btn-mango { background: var(--color-mango); color: var(--color-ink); }
+
+.field {
+  width: 100%; height: 48px; padding: 0 14px; border-radius: 12px;
+  background: var(--color-paper); border: 1.5px solid var(--color-sand-deep);
+  font-size: 16px; color: var(--color-ink);
+}
+.field:focus { outline: none; border-color: var(--color-lagoon); }
+textarea.field { height: auto; padding: 12px 14px; }
+.label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--color-ink-soft); }
+
+.panel { background: var(--color-paper); border-radius: 20px; }
+
+@media print {
+  body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .receipt { filter: none; -webkit-mask: none; mask: none; padding: 0; }
+  .print-area { max-width: 80mm; margin: 0 auto; }
+}
